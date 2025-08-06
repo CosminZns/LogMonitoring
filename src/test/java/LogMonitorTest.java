@@ -26,7 +26,7 @@ class LogMonitorTest {
     }
 
     @Test
-    void testGenerateReportWithValidData() {
+    void testGenerateOutputWithValidData() {
         Stream<String> logLines = Stream.of(
                 "11:35:23,scheduled task 051,START,39547",
                 "11:46:00,scheduled task 051,END,39547",  // 10-minute and 37 seconds duration (exceeds 10 minutes - ERROR)
@@ -40,7 +40,7 @@ class LogMonitorTest {
             mockedLines.when(() -> Files.lines(Path.of(FILE_PATH)))
                     .thenReturn(logLines);
 
-            logMonitor.generateReport();
+            logMonitor.generateOutput();
 
             verify(mockLogger, times(1)).error(
                     "Job '{}' with PID {} took longer than 10 minutes.",
@@ -56,7 +56,7 @@ class LogMonitorTest {
     }
 
     @Test
-    void testGenerateReportWithIncompleteEntries() {
+    void testGenerateOutputWithIncompleteEntries() {
         Stream<String> logLines = Stream.of(
                 "11:35:23,scheduled task 032,START,37980"
         );
@@ -65,7 +65,7 @@ class LogMonitorTest {
             mockedLines.when(() -> Files.lines(Path.of(FILE_PATH)))
                     .thenReturn(logLines);
 
-            logMonitor.generateReport();
+            logMonitor.generateOutput();
 
             verify(mockLogger, never()).warn(anyString(), any(), any());
             verify(mockLogger, never()).error(anyString(), any(), any());
@@ -73,14 +73,14 @@ class LogMonitorTest {
     }
 
     @Test
-    void testGenerateReportWithNoData() {
+    void testGenerateOutputWithNoData() {
         Stream<String> emptyStream = Stream.empty();
 
         try (var mockedLines = mockStatic(Files.class)) {
             mockedLines.when(() -> Files.lines(Path.of(FILE_PATH)))
                     .thenReturn(emptyStream);
 
-            logMonitor.generateReport();
+            logMonitor.generateOutput();
 
             verify(mockLogger, never()).warn(anyString(), any(), any());
             verify(mockLogger, never()).error(anyString(), any(), any());
@@ -88,12 +88,12 @@ class LogMonitorTest {
     }
 
     @Test
-    void testGenerateReportWithException() {
+    void testGenerateOutputWithException() {
         try (var mockedLines = mockStatic(Files.class)) {
             mockedLines.when(() -> Files.lines(Path.of(FILE_PATH)))
                     .thenThrow(new RuntimeException("File read error"));
 
-            logMonitor.generateReport();
+            logMonitor.generateOutput();
 
             verify(mockLogger, times(1)).error(
                     eq("Error reading the log file. File path: {}. Error: {}"),

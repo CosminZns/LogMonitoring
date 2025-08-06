@@ -17,7 +17,7 @@ public class LogMonitor {
     private static final int WARNING_LOG_THRESHOLD = 300;  //5 minutes in seconds
     private static final int ERROR_LOG_THRESHOLD = 600;    //10 minutes in seconds
 
-    public void generateReport() {
+    public void generateOutput() {
 
         try (var lines = Files.lines(Path.of(FILE_PATH))) {
             List<LogEntry> logEntries = lines
